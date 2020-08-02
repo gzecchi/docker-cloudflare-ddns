@@ -23,13 +23,14 @@ docker run \
   -e API_KEY=xxxxxxx \
   -e ZONE=example.com \
   -e SUBDOMAIN=subdomain \
-  oznu/cloudflare-ddns
+  gzecchi/cloudflare-ddns
 ```
 
 ## Parameters
 
 * `--restart=always` - ensure the container restarts automatically after host reboot.
-* `-e API_KEY` - Your CloudFlare scoped API token. See the [Creating a Cloudflare API token](#creating-a-cloudflare-api-token) below. **Required**
+* `-e API_KEY` - Your CloudFlare scoped API token. See the [Creating a Cloudflare API token](#creating-a-cloudflare-api-token) below. **Required if API_KEY_FILE not specified**
+* `-e API_KEY_FILE` - Your CloudFlare scoped API token saved into a file. See the [Creating a Cloudflare API token](#creating-a-cloudflare-api-token) below. **Required if API_KEY not specified**
 * `-e ZONE` - The DNS zone that DDNS updates should be applied to. **Required**
 * `-e SUBDOMAIN` - A subdomain of the `ZONE` to write DNS changes to. If this is not supplied the root zone will be used.
 
@@ -59,7 +60,7 @@ To create a CloudFlare API token for your DNS zone go to https://dash.cloudflare
     * Zone - DNS - Edit
 4. Set the zone resources to:
     * Include - All zones
-5. Complete the wizard and copy the generated token into the `API_KEY` variable for the container
+5. Complete the wizard and copy the generated token into the `API_KEY` variable for the container or save into a file and specify `API_KEY_FILE` (e.g.: Docker Secrets)
 
 ## Multiple Domains
 
@@ -74,16 +75,29 @@ If you're wanting to set IPv6 records set the envrionment variable `RRTYPE=AAAA`
 If you prefer to use [Docker Compose](https://docs.docker.com/compose/):
 
 ```yml
-version: '2'
+version: '3'
 services:
   cloudflare-ddns:
-    image: oznu/cloudflare-ddns:latest
+    image: gzecchi/cloudflare-ddns:latest
     restart: always
     environment:
       - API_KEY=xxxxxxx
       - ZONE=example.com
       - SUBDOMAIN=subdomain
       - PROXIED=false
+
+version: '3'
+services:
+  cloudflare-ddns:
+    image: gzecchi/cloudflare-ddns:latest
+    restart: always
+    environment:
+      - API_KEY_FILE=/var/secrets/cloudflare_scoped_api_token
+      - ZONE=example.com
+      - SUBDOMAIN=subdomain
+      - PROXIED=false
+    secrets:
+      - cloudflare_scoped_api_token
 ```
 
 ## License
